@@ -16,6 +16,38 @@ func (r *Reader) Skip(size int64) (skipped int64) {
 	return
 }
 
+func (r *Reader) Pos() (pos int64) {
+	if r.err != nil {
+		return
+	}
+	r.index.Add(1)
+
+	pos, r.err = r.r.Seek(0, io.SeekCurrent)
+	return
+}
+
+func (r *Reader) SetPos(pos int64) {
+	if r.err != nil {
+		return
+	}
+	r.index.Add(1)
+
+	_, r.err = r.r.Seek(pos, io.SeekStart)
+}
+
+func (r *Reader) Size() (size int64) {
+	if r.err != nil {
+		return
+	}
+	r.index.Add(1)
+
+	current := r.Pos()
+	size, r.err = r.r.Seek(0, io.SeekEnd)
+	r.SetPos(current)
+
+	return
+}
+
 func (r *Reader) Bytes(size int) (data []byte) {
 	if r.err != nil {
 		return
@@ -176,9 +208,9 @@ func (r *Reader) String() (data string) {
 	return data
 }
 
-type ArrayReaderFunc[T any] func(ar *Reader) (T, error)
+type ReaderFunc[T any] func(ar *Reader) (T, error)
 
-func ReadArray[T any](ar *Reader, size int32, fn ArrayReaderFunc[T]) []T {
+func ReadArray[T any](ar *Reader, size int32, fn ReaderFunc[T]) []T {
 	if ar.err != nil || size <= 0 {
 		return nil
 	}
@@ -199,6 +231,6 @@ func ReadArray[T any](ar *Reader, size int32, fn ArrayReaderFunc[T]) []T {
 	return data
 }
 
-func ReadSlice[T any](ar *Reader, fn ArrayReaderFunc[T]) []T {
+func ReadSlice[T any](ar *Reader, fn ReaderFunc[T]) []T {
 	return ReadArray(ar, ar.Int32(), fn)
 }
