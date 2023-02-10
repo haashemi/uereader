@@ -5,7 +5,7 @@ UEReader is a simple Unreal Engine binary reader.
 ## Installation
 
 ```bash
-go add github.com/gounreal/uereader
+go get github.com/gounreal/uereader
 ```
 
 ## Usage
